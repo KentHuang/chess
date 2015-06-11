@@ -1,7 +1,7 @@
 ;(function () {
 
 var canvas, ctx;
-var player1, player2;
+// var player1, player2;
 const NUMBER_TILES_ACROSS = 8;
 const CANVAS_LENGTH = 400;
 const TILE_LENGTH = CANVAS_LENGTH/NUMBER_TILES_ACROSS;
@@ -17,12 +17,27 @@ var pieceColor = {
   WHITE: 'white',
   BLACK: 'black'
 }
+var GAME_OVER = false;
+var TURN = 0; // 0 is white, 1 is black
 
 // import sprite images
 var piecesImages = new Image();
 piecesImages.src = 'Chess_Pieces_Sprite.png';
 var pieceImageWidth = piecesImages.width / 6;
 var pieceImageHeight = piecesImages.height / 2;
+
+// contains all pieces objects
+var pieces = [];
+
+// constructor for a piece object
+function Piece(x, y, color, type) {
+    // the position of a piece is defined by the positon 
+    // of the top left corner of the tile it sits on
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.type = type;
+}
 
 // draw the sprite using sprite sheet
 function drawPiece(piece) {
@@ -44,18 +59,6 @@ function drawPiece(piece) {
   }
   
   ctx.drawImage(piecesImages, sx*pieceImageWidth, sy*pieceImageHeight, pieceImageWidth, pieceImageHeight, piece.x, piece.y, TILE_LENGTH, TILE_LENGTH);
-  // console.log(sx + ':' + sy);
-}
-
-// constructor for a piece object
-function Piece(x, y, color, type) {
-    // the position of a piece is defined by the positon 
-    // of the top left corner of the tile it sits on
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.type = type;
-    this.isDead = false;
 }
 
 
@@ -74,8 +77,6 @@ function init() {
       ctx.fillRect(i*TILE_LENGTH, j*TILE_LENGTH, TILE_LENGTH, TILE_LENGTH);
     }
   }  
-
-  var pieces = [];
 
   function constructMiscPieces(color) {
     var pos = (color === pieceColor.WHITE) ? 7 : 0
@@ -113,21 +114,80 @@ function init() {
   for (var i = 0; i < pieces.length; i++) {
     drawPiece(pieces[i]);
   }
-
 }
+
+
+function isValidType(type) {
+  return type === pieceType.ROOK ||
+    type === pieceType.KNIGHT ||
+    type === pieceType.BISHOP ||
+    type === pieceType.QUEEN ||
+    type === pieceType.KING ||
+    type === pieceType.PAWN;
+}
+
+function isValidCoord(coord) {
+  var sx = coord[0].charCodeAt(0);
+  var sy = parseInt(coord[1]) - 1;
+  return (sx >= 0 && sx <= 7) && (sy >= 0 && sy <= 7);
+}
+
+function moveSyntaxIsValid(move) {
+  var parsedMove = move.split(' ');
+  if (parsedMove.length !== 3) { console.log('Invalid sytnax'); return false; } 
+
+  var type = parsedMove[0],
+      curr = parsedMove[1],
+      dest = parsedMove[2];
+
+  if (!isValidType(type)) { console.log('Invalid piece type'); return false; }
+  
+  if (!isValidCoord(curr)) { console.log('Invalid current coords'), return false; }
+
+  if (dest === 'castling' && type !== pieceType.ROOK) { console.log('Only Rooks can castle'); return false; }
+  else if (dest === 'promote' && type !== pieceType.PAWN) { console.log('Only Pawns can be promoted'); return false; }
+  else if (!isValidCoord(dest)) { console.log('Invalid destination coords'); return false; })
+  
+  return true;
+}
+
+function moveIsValid(move) {}
 
 function update() {}
 
-function draw() {}
-
-function play() {
-  
-
-
-}
 
 window.onload = function() {
   init();
+
+  // while (!GAME_OVER) {
+
+  // }
+
+  // a String in the form of "[piece] [current coord] [destination coord]"
+  // or "[rook] [current coord] ['castling']"
+  // or "[pawn] [current coord] ['promote']"
+  var move = ''; 
+  var input = document.getElementById('inputMove');
+  var button = document.getElementById('inputButton');
+  button.addEventListener('click', function () {
+    // console.log(input.value);
+    move = input.value;
+    input.value = '';
+  }, false);
+
+  if (moveIsValid(move)) {
+    // update()
+  }
+
 }
+
+
+
+
+
+
  
 })();
+
+
+
