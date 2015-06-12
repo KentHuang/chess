@@ -136,14 +136,7 @@ function isValidCoord(coord) {
   }
 }
 
-function moveSyntaxIsValid(move) {
-  var parsedMove = move.split(/[ ,]+/);
-  if (parsedMove.length !== 3) { console.log('Invalid sytnax'); return false; } 
-
-  var type = parsedMove[0],
-      curr = parsedMove[1],
-      dest = parsedMove[2];
-
+function moveSyntaxIsValid(type, curr, dest) {
   if (!isValidType(type)) { console.log('Invalid piece type'); return false; }
   
   if (!isValidCoord(curr)) { console.log('Invalid current coords'); return false; }
@@ -154,26 +147,38 @@ function moveSyntaxIsValid(move) {
   return true;
 }
 
-console.assert(moveSyntaxIsValid('rook e3 castling'));
-console.assert(moveSyntaxIsValid('pawn b3 promote'));
-console.assert(moveSyntaxIsValid('rook b3 b6'));
-console.assert(moveSyntaxIsValid('rook b3 promote'));
-console.assert(moveSyntaxIsValid('pawn b3 castling'));
-console.assert(moveSyntaxIsValid('rook b99 promote'));
-console.assert(moveSyntaxIsValid('rok b3 promote'));
-console.assert(moveSyntaxIsValid('rook b3 b7'));
+// console.assert(moveSyntaxIsValid('rook e3 castling'));
+// console.assert(moveSyntaxIsValid('pawn b3 promote'));
+// console.assert(moveSyntaxIsValid('rook b3 b6'));
+// console.assert(moveSyntaxIsValid('rook b3 promote'));
+// console.assert(moveSyntaxIsValid('pawn b3 castling'));
+// console.assert(moveSyntaxIsValid('rook b99 promote'));
+// console.assert(moveSyntaxIsValid('rok b3 promote'));
+// console.assert(moveSyntaxIsValid('rook b3 b7'));
 
-function moveIsValid(move) {}
+function moveIsValid(type, curr, dest) {
+  if (!moveSyntaxIsValid(type, curr, dest)) { 
+    return false; 
+  } else {
+    return true;
+  }
+}
 
-function update() {}
+function update(curr, dest) {
+  for (var i = 0; i < pieces.length; i++) {
+    var sx = (curr[0].charCodeAt(0) - 97)*TILE_LENGTH;
+    var sy = (parseInt(curr[1]) - 1)*TILE_LENGTH;
+    if (pieces[i].x == sx && pieces[i].y == sy) {
+      pieces[i].x = (dest[0].charCodeAt(0) - 97)*TILE_LENGTH;
+      pieces[i].y = (parseInt(dest[1]) - 1)*TILE_LENGTH;
+    }
+    drawPiece(pieces[i]);
+  }
+}
 
 
 window.onload = function() {
   init();
-
-  // while (!GAME_OVER) {
-
-  // }
 
   // a String in the form of "[piece] [current coord] [destination coord]"
   // or "[rook] [current coord] ['castling']"
@@ -181,16 +186,24 @@ window.onload = function() {
   var move = ''; 
   var input = document.getElementById('inputMove');
   var button = document.getElementById('inputButton');
+
   button.addEventListener('click', function () {
-    // console.log(input.value);
     move = input.value;
     input.value = '';
+    var parsedMove = move.split(/[ ,]+/);
+    if (parsedMove.length !== 3) { 
+      console.log('Invalid sytnax. Try again.');
+      return; 
+    } 
+
+    var type = parsedMove[0],
+        curr = parsedMove[1],
+        dest = parsedMove[2];
+
+    if (moveIsValid(type, curr, dest)) {
+      update(curr, dest);
+    }
   }, false);
-
-  if (moveIsValid(move)) {
-    // update()
-  }
-
 }
 
 
