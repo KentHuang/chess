@@ -174,16 +174,38 @@ function moveSyntaxIsValid(move) {
 // console.assert(moveSyntaxIsValid('rok b3 promote'));
 // console.assert(moveSyntaxIsValid('rook b3 b7'));
 
+function generateValidTilesList(type, x, y) {
+  validTilesList = []; // list of {x: x, y: y}
+  return 
+}
+
 function moveIsValid(move) {
   var moveObj = moveSyntaxIsValid(move); // {type: type, curr: curr, dest: dest}
   if (!moveObj) {
+    // invalid move syntax
     return; 
-  } else {
-    var curr_x = (moveObj.curr[0].charCodeAt(0) - 97)*TILE_LENGTH;
-    var curr_y = (parseInt(moveObj.curr[1]) - 1)*TILE_LENGTH;
-    var dest_x = (moveObj.dest[0].charCodeAt(0) - 97)*TILE_LENGTH;
-    var dest_y = (parseInt(moveObj.dest[1]) - 1)*TILE_LENGTH;
-    return { type: moveObj.type, curr_x: curr_x, curr_y: curr_y, dest_x: dest_x, dest_y: dest_y };
+  } 
+
+  var curr_x = (moveObj.curr[0].charCodeAt(0) - 97)*TILE_LENGTH;
+  var curr_y = (parseInt(moveObj.curr[1]) - 1)*TILE_LENGTH;
+  var dest_x = (moveObj.dest[0].charCodeAt(0) - 97)*TILE_LENGTH;
+  var dest_y = (parseInt(moveObj.dest[1]) - 1)*TILE_LENGTH;
+  var currPiece = getPieceAt(curr_x, curr_y);
+  if (currPiece.type !== moveObj.type) {
+    console.log('No ' + moveObj.type +' at ' + moveObj.curr);
+    return;
+  }
+
+  // By this point, move syntax is correct, and there exists a piece at the given coordinates
+  // Check if destination coordinates are valid
+  var validTilesList = generateValidTilesList(moveObj.type, curr_x, curr_y);
+  var moveObjValid; 
+  for (var i = 0; i < validTilesList.length; i++) {
+    if (validTilesList[i].x === dest_x && validTilesList[i].y === dest_y) {
+      moveObjValid = { type: moveObj.type, curr_x: curr_x, curr_y: curr_y, dest_x: dest_x, dest_y: dest_y };
+    }
+  }
+  return moveObjValid; // can return undefined as well
   }
 }
 
@@ -191,15 +213,15 @@ function update(curr_x, curr_y, dest_x, dest_y) {
   
   for (var i = 0; i < pieces.length; i++) {
     
-    // draw piece at new  
+    // draw piece at new tile
     if (pieces[i].x == curr_x && pieces[i].y == curr_y) {
       pieces[i].x = dest_x;
       pieces[i].y = dest_y;
     }
     drawPiece(pieces[i]);
 
-    // remove piece at old 
-    var color = ((curr_x+curr_y)%2 === 0) ? '#FFFFFF' : '#808080';
+    // remove piece at old tile
+    var color = (((curr_x+curr_y)/TILE_LENGTH)%2 === 0) ? '#FFFFFF' : '#808080';
     ctx.fillStyle = color;
     ctx.fillRect(curr_x, curr_y, TILE_LENGTH, TILE_LENGTH);
   }
