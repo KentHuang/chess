@@ -166,13 +166,19 @@ function moveIsValid(type, curr, dest) {
 
 function update(curr, dest) {
   for (var i = 0; i < pieces.length; i++) {
-    var sx = (curr[0].charCodeAt(0) - 97)*TILE_LENGTH;
-    var sy = (parseInt(curr[1]) - 1)*TILE_LENGTH;
+    var x = curr[0].charCodeAt(0) - 97;
+    var y = parseInt(curr[1]) - 1;
+    var sx = x*TILE_LENGTH;
+    var sy = y*TILE_LENGTH
     if (pieces[i].x == sx && pieces[i].y == sy) {
       pieces[i].x = (dest[0].charCodeAt(0) - 97)*TILE_LENGTH;
       pieces[i].y = (parseInt(dest[1]) - 1)*TILE_LENGTH;
     }
     drawPiece(pieces[i]);
+
+    var color = ((x+y)%2 === 0) ? '#FFFFFF' : '#808080';
+    ctx.fillStyle = color;
+    ctx.fillRect(sx, sy, TILE_LENGTH, TILE_LENGTH);
   }
 }
 
@@ -189,7 +195,6 @@ window.onload = function() {
 
   button.addEventListener('click', function () {
     move = input.value;
-    input.value = '';
     var parsedMove = move.split(/[ ,]+/);
     if (parsedMove.length !== 3) { 
       console.log('Invalid sytnax. Try again.');
@@ -202,7 +207,11 @@ window.onload = function() {
 
     if (moveIsValid(type, curr, dest)) {
       update(curr, dest);
+    } else {
+      return;
     }
+
+    input.value = '';
   }, false);
 }
 
