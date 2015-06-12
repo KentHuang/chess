@@ -127,13 +127,17 @@ function isValidType(type) {
 }
 
 function isValidCoord(coord) {
-  var sx = coord[0].charCodeAt(0);
-  var sy = parseInt(coord[1]) - 1;
-  return (sx >= 0 && sx <= 7) && (sy >= 0 && sy <= 7);
+  if (coord.length != 2) {
+    return false
+  } else {
+    var sx = coord[0].charCodeAt(0) - 97;
+    var sy = parseInt(coord[1]) - 1;
+    return (sx >= 0 && sx <= 7) && (sy >= 0 && sy <= 7);
+  }
 }
 
 function moveSyntaxIsValid(move) {
-  var parsedMove = move.split(' ');
+  var parsedMove = move.split(/[ ,]+/);
   if (parsedMove.length !== 3) { console.log('Invalid sytnax'); return false; } 
 
   var type = parsedMove[0],
@@ -142,14 +146,22 @@ function moveSyntaxIsValid(move) {
 
   if (!isValidType(type)) { console.log('Invalid piece type'); return false; }
   
-  if (!isValidCoord(curr)) { console.log('Invalid current coords'), return false; }
+  if (!isValidCoord(curr)) { console.log('Invalid current coords'); return false; }
 
-  if (dest === 'castling' && type !== pieceType.ROOK) { console.log('Only Rooks can castle'); return false; }
+  if (!(dest === 'castling' || dest === 'promote' || isValidCoord(dest))) { console.log('Invalid destination or command'); return false; }
+  else if (dest === 'castling' && type !== pieceType.ROOK) { console.log('Only Rooks can castle'); return false; }
   else if (dest === 'promote' && type !== pieceType.PAWN) { console.log('Only Pawns can be promoted'); return false; }
-  else if (!isValidCoord(dest)) { console.log('Invalid destination coords'); return false; })
-  
   return true;
 }
+
+console.assert(moveSyntaxIsValid('rook e3 castling'));
+console.assert(moveSyntaxIsValid('pawn b3 promote'));
+console.assert(moveSyntaxIsValid('rook b3 b6'));
+console.assert(moveSyntaxIsValid('rook b3 promote'));
+console.assert(moveSyntaxIsValid('pawn b3 castling'));
+console.assert(moveSyntaxIsValid('rook b99 promote'));
+console.assert(moveSyntaxIsValid('rok b3 promote'));
+console.assert(moveSyntaxIsValid('rook b3 b7'));
 
 function moveIsValid(move) {}
 
