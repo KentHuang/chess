@@ -30,7 +30,7 @@ var pieceImageHeight = piecesImages.height / 2;
 var pieces = [];
 
 // constructor for a piece object
-function Piece(x, y, color, type) {
+var Piece = function (x, y, color, type) {
     // the position of a piece is defined by the positon 
     // of the top left corner of the tile it sits on
     this.x = x;
@@ -45,6 +45,7 @@ function getPieceAt(x, y) {
       return pieces[i]
     }
   }
+  return;
 }
 
 // draw the sprite using sprite sheet
@@ -174,9 +175,33 @@ function moveSyntaxIsValid(move) {
 // console.assert(moveSyntaxIsValid('rok b3 promote'));
 // console.assert(moveSyntaxIsValid('rook b3 b7'));
 
-function generateValidTilesList(type, x, y) {
+function generateValidTilesList(piece) {
   validTilesList = []; // list of {x: x, y: y}
-  return 
+
+  switch (piece.type) {
+    case pieceType.PAWN: 
+      // if (piece.color === pieceColor.WHITE) {
+      //   validTilesList.push({ x: piece.x, y: 6});
+      //   if (piece.y === 7) {
+      //     validTilesList.push({ x: piece.x, y: 5});
+      //   } 
+      //   if (getPieceAt().color === pieceColor.BLACK)
+      // } else if (piece.color === pieceColor.BLACK) {
+      //   validTilesList.push();
+      //   if (piece.y === 2) {
+      //     validTilesList.push();
+      //   }
+      // }
+      break;
+    case pieceType.ROOK: break;
+    case pieceType.KNIGHT: break;
+    case pieceType.BISHOP: break;
+    case pieceType.QUEEN: break;
+    case pieceType.KING: break;
+    default: console.log('piece type error');
+  }
+
+  return validTilesList; 
 }
 
 function moveIsValid(move) {
@@ -198,7 +223,7 @@ function moveIsValid(move) {
 
   // By this point, move syntax is correct, and there exists a piece at the given coordinates
   // Check if destination coordinates are valid
-  var validTilesList = generateValidTilesList(moveObj.type, curr_x, curr_y);
+  var validTilesList = generateValidTilesList(currPiece);
   var moveObjValid; 
   for (var i = 0; i < validTilesList.length; i++) {
     if (validTilesList[i].x === dest_x && validTilesList[i].y === dest_y) {
@@ -206,10 +231,10 @@ function moveIsValid(move) {
     }
   }
   return moveObjValid; // can return undefined as well
-  }
 }
 
-function update(curr_x, curr_y, dest_x, dest_y) {
+
+function movePiece(curr_x, curr_y, dest_x, dest_y) {
   
   for (var i = 0; i < pieces.length; i++) {
     
@@ -242,7 +267,7 @@ window.onload = function() {
     move = input.value;
     var moveObj = moveIsValid(move);
     if (moveObj) {
-      update(moveObj.curr_x, moveObj.curr_y, moveObj.dest_x, moveObj.dest_y);
+      movePiece(moveObj.curr_x, moveObj.curr_y, moveObj.dest_x, moveObj.dest_y);
     } else {
       return;
     }
