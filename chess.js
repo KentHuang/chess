@@ -17,8 +17,8 @@ var pieceColor = {
   WHITE: 'white',
   BLACK: 'black'
 }
-var GAME_OVER = false;
-var TURN = 0; // 0 is white, 1 is black
+// var GAME_OVER = false;
+// var TURN = 0; // 0 is white, 1 is black
 
 // import sprite images
 var piecesImages = new Image();
@@ -39,9 +39,17 @@ function Piece(x, y, color, type) {
     this.type = type;
 }
 
+function getPieceAt(x, y) {
+  for (var i = 0; i < pieces.length; i++) {
+    if (pieces[i].x === x && pieces[i].y === y) {
+      return pieces[i]
+    }
+  }
+}
+
 // draw the sprite using sprite sheet
 function drawPiece(piece) {
-  var sx, sy; // positions on the sprite sheet
+  var sx, sy; // coords on the sprite sheet
   if (piece.color === pieceColor.WHITE) {
     sy = 0;
   } else if (piece.color === pieceColor.BLACK) {
@@ -136,15 +144,25 @@ function isValidCoord(coord) {
   }
 }
 
-function moveSyntaxIsValid(type, curr, dest) {
-  if (!isValidType(type)) { console.log('Invalid piece type'); return false; }
-  
-  if (!isValidCoord(curr)) { console.log('Invalid current coords'); return false; }
+function moveSyntaxIsValid(move) {
+  var parsedMove = move.split(/[ ,]+/);
+  if (parsedMove.length !== 3) { 
+    console.log('Invalid sytnax. Try again.');
+    return; 
+  } 
 
-  if (!(dest === 'castling' || dest === 'promote' || isValidCoord(dest))) { console.log('Invalid destination or command'); return false; }
-  else if (dest === 'castling' && type !== pieceType.ROOK) { console.log('Only Rooks can castle'); return false; }
-  else if (dest === 'promote' && type !== pieceType.PAWN) { console.log('Only Pawns can be promoted'); return false; }
-  return true;
+  var type = parsedMove[0],
+      curr = parsedMove[1],
+      dest = parsedMove[2];
+
+  if (!isValidType(type)) { console.log('Invalid piece type'); return; }
+  
+  if (!isValidCoord(curr)) { console.log('Invalid current coords'); return; }
+
+  if (!(dest === 'castling' || dest === 'promote' || isValidCoord(dest))) { console.log('Invalid destination or command'); return; }
+  else if (dest === 'castling' && type !== pieceType.ROOK) { console.log('Only Rooks can castle'); return; }
+  else if (dest === 'promote' && type !== pieceType.PAWN) { console.log('Only Pawns can be promoted'); return; }
+  else { return { type: type, curr: curr, dest: dest }; }
 }
 
 // console.assert(moveSyntaxIsValid('rook e3 castling'));
@@ -156,29 +174,34 @@ function moveSyntaxIsValid(type, curr, dest) {
 // console.assert(moveSyntaxIsValid('rok b3 promote'));
 // console.assert(moveSyntaxIsValid('rook b3 b7'));
 
-function moveIsValid(type, curr, dest) {
-  if (!moveSyntaxIsValid(type, curr, dest)) { 
-    return false; 
+function moveIsValid(move) {
+  var moveObj = moveSyntaxIsValid(move); // {type: type, curr: curr, dest: dest}
+  if (!moveObj) {
+    return; 
   } else {
-    return true;
+    var curr_x = (moveObj.curr[0].charCodeAt(0) - 97)*TILE_LENGTH;
+    var curr_y = (parseInt(moveObj.curr[1]) - 1)*TILE_LENGTH;
+    var dest_x = (moveObj.dest[0].charCodeAt(0) - 97)*TILE_LENGTH;
+    var dest_y = (parseInt(moveObj.dest[1]) - 1)*TILE_LENGTH;
+    return { type: moveObj.type, curr_x: curr_x, curr_y: curr_y, dest_x: dest_x, dest_y: dest_y };
   }
 }
 
-function update(curr, dest) {
+function update(curr_x, curr_y, dest_x, dest_y) {
+  
   for (var i = 0; i < pieces.length; i++) {
-    var x = curr[0].charCodeAt(0) - 97;
-    var y = parseInt(curr[1]) - 1;
-    var sx = x*TILE_LENGTH;
-    var sy = y*TILE_LENGTH
-    if (pieces[i].x == sx && pieces[i].y == sy) {
-      pieces[i].x = (dest[0].charCodeAt(0) - 97)*TILE_LENGTH;
-      pieces[i].y = (parseInt(dest[1]) - 1)*TILE_LENGTH;
+    
+    // draw piece at new  
+    if (pieces[i].x == curr_x && pieces[i].y == curr_y) {
+      pieces[i].x = dest_x;
+      pieces[i].y = dest_y;
     }
     drawPiece(pieces[i]);
 
-    var color = ((x+y)%2 === 0) ? '#FFFFFF' : '#808080';
+    // remove piece at old 
+    var color = ((curr_x+curr_y)%2 === 0) ? '#FFFFFF' : '#808080';
     ctx.fillStyle = color;
-    ctx.fillRect(sx, sy, TILE_LENGTH, TILE_LENGTH);
+    ctx.fillRect(curr_x, curr_y, TILE_LENGTH, TILE_LENGTH);
   }
 }
 
@@ -195,18 +218,9 @@ window.onload = function() {
 
   button.addEventListener('click', function () {
     move = input.value;
-    var parsedMove = move.split(/[ ,]+/);
-    if (parsedMove.length !== 3) { 
-      console.log('Invalid sytnax. Try again.');
-      return; 
-    } 
-
-    var type = parsedMove[0],
-        curr = parsedMove[1],
-        dest = parsedMove[2];
-
-    if (moveIsValid(type, curr, dest)) {
-      update(curr, dest);
+    var moveObj = moveIsValid(move);
+    if (moveObj) {
+      update(moveObj.curr_x, moveObj.curr_y, moveObj.dest_x, moveObj.dest_y);
     } else {
       return;
     }
